@@ -29,7 +29,7 @@ const movies = sequelize.define('Movies', {
     type: Sequelize.STRING
   },
   rating: {
-    type: Sequelize.NUMBER
+    type: Sequelize.INTEGER
   },
   release: {
     type: Sequelize.DATE
@@ -40,21 +40,67 @@ const movies = sequelize.define('Movies', {
 router.get('/movies', (req, res) => {
   movies.sync({force: true}).then(() => {
     res.send({message: "create table successfully"})
+  }).catch(err => {
+    res.send({message: "Failed create table"})
   })
 })
-// force: true will drop the table if it already exists
-movies.sync({force: true}).then(() => {
-  // Table created
-  return movies.create({firstName: 'John', lastName: 'Hancock'});
-});
 
-movies.findAll().then(users => {
-  console.log(users)
+//get all data
+router.get('/view', (req, res) => {
+  movies.findAll().then(Movies => {
+    res.send(JSON.parse(JSON.stringify(Movies)))
+  })
 })
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', {title: 'Express'});
-});
+//post data to Table
+router.post('/movies', (req, res) => {
+  movies.create({title: req.body.title, genre: req.body.genre, rating: req.body.rating, release: req.body.release}).then(() => {
+    res.send({message: "Data has been created"})
+  }).catch(err => {
+    res.send({message: "Failed create data"})
+  })
+})
+
+//get one data by id
+router.get('/view/:id', (req, res) => {
+  movies.findById(req.params.id).then(Movies => {
+    res.send(JSON.parse(JSON.stringify(Movies)))
+  })
+})
+
+//delete  data by id
+router.delete('/view/:id', (req, res) => {
+  movies.destroy({
+    where: {
+      id: req.params.id
+    }
+  }).then(() => {
+    res.send({message: "Data has been deleted"})
+  }).catch(err => {
+    res.send({message: "Failed delete data"})
+  })
+})
+
+//update data by id
+router.put('/view/:id', (req, res) => {
+  movies.update({
+    title: req.body.title,
+    genre: req.body.genre,
+    rating: req.body.rating,
+    release: req.body.release
+  }, {
+    where: {
+      id: req.params.id
+    }
+  }).then(() => {
+    res.send({message: "update successfully"})
+  }).catch(err => {
+    res.send({message: "failed update"})
+  })
+})
+// /* GET home page. */
+// router.get('/', function(req, res, next) {
+//   res.render('index', {title: 'Express'});
+// });
 
 module.exports = router;
